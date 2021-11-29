@@ -79,8 +79,54 @@ void setup()
       Serial.printf("Avanço da Iluminação está %s\r\n", state? "ON":"OFF"); 
 
    }
-      // AQUI VAI OUTROS COMANDOS!!
-  
+
+   if ( (strcmp(device_name, Comando_3) == 0) ) {
+      
+      //Código binário do comando 3 
+      mySwitch.send("0101001110101010101101100101");
+      Serial.printf("Retrocesso da Iluminação está %s\r\n", state? "ON":"OFF"); 
+    
+   }
+
+   if ( (strcmp(device_name, Comando_4) == 0) ) {
+      
+      //Código binário do comando 4 
+      mySwitch.send("0101001110101010101110000101");
+      Serial.printf("Ajuste intensidade luz está %s\r\n", state? "ON":"OFF"); 
+    
+   }
+
+   if ( (strcmp(device_name, Comando_5) == 0) ) {
+      
+      //Código binário do comando 5 
+      mySwitch.send("0101001110101010101100010101");
+      Serial.printf("Filtro on/off está %s\r\n", state? "ON":"OFF"); 
+    
+   }
+
+   if ( (strcmp(device_name, Comando_6) == 0) ) {
+      
+      //Código binário do comando 6 
+      mySwitch.send("0101001110101010101110010101");
+      Serial.printf("Saída 1 on/off está %s\r\n", state? "ON":"OFF"); 
+    
+   }
+
+   if ( (strcmp(device_name, Comando_7) == 0) ) {
+      
+      //Código binário do comando 7 
+      mySwitch.send("0101001110101010101110100101");
+      Serial.printf("Saída 2 on/off está %s\r\n", state? "ON":"OFF"); 
+    
+   }
+
+   if ( (strcmp(device_name, Comando_8) == 0) ) {
+      
+      //Código binário do comando 8 
+      mySwitch.send("0101001110101010101101010101");
+      Serial.printf("Áudio está %s\r\n", state? "ON":"OFF"); 
+    
+   }
   });
      // FECHA VOID SETUP!!
 }
