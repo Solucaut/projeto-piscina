@@ -9,8 +9,13 @@
 
 //          Configuração da ALexa
 #include <Arduino.h>
-#include <ESP8266WiFi.h> 
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <DNSServer.h> //Local DNS Server used for redirecting all requests to the configuration portal ( https://github.com/zhouhan0126/DNSServer---esp32 )
+#include <WiFiManager.h>  
 #include "fauxmoESP.h"
+
+const int PIN_AP = 33; //pino que ligara o botão 
 
 void setupWiFi();
 fauxmoESP fauxmo;
@@ -34,20 +39,34 @@ RCSwitch mySwitch = RCSwitch();
 
 
 void setup()
-{
+{ pinMode(PIN_AP, INPUT);
+  //declaração do objeto wifiManager
+  WiFiManager wifiManager;
+
+  //utilizando esse comando, as configurações são apagadas da memória
+  //caso tiver salvo alguma rede para conectar automaticamente, ela é apagada.
+  //  wifiManager.resetSettings();
+
+  //callback para quando entra em modo de configuração AP
+  wifiManager.setAPCallback(configModeCallback); 
+  //callback para quando se conecta em uma rede, ou seja, quando passa a trabalhar em modo estação
+  wifiManager.setSaveConfigCallback(saveConfigCallback); 
+
+ //cria uma rede de nome ESP_AP com senha 12345678
+  wifiManager.autoConnect("ESP_AP", "12345678"); 
+
   Serial.begin(9600);
   delay(500);
   Serial.println("INICIADO!");
 
 
-//   Configuração para Transmissão do RF
+ //   Configuração para Transmissão do RF
   mySwitch.enableTransmit(4);
   mySwitch.setProtocol(6);
   mySwitch.setPulseLength(435);
   
 
-//       Configuração da Alexa e Adicionar dispositivo na Alexa
-  setupWiFi();
+ //       Configuração da Alexa e Adicionar dispositivo na Alexa
   fauxmo.createServer(true); 
   fauxmo.setPort(80);
   fauxmo.enable(true);
@@ -141,17 +160,29 @@ void loop() {
     last = millis();
     Serial.printf("[MAIN] Free heap: %d bytes\n", ESP.getFreeHeap());
   } 
+  
+  if ( digitalRead(PIN_AP) == HIGH ) 
+   {
+      WiFiManager wifiManager;
+      if(!wifiManager.startConfigPortal("ESP_AP", "12345678") )
+      {
+        Serial.println("Falha ao conectar");
+        delay(2000);
+        ESP.restart();
+      }
+   }
 }
 
-// Setup das conexões Wifi
-void setupWiFi() {
-  WiFi.mode(WIFI_STA);
-  Serial.printf("\r\n[Wifi]: Conectando...");
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.printf(".");
-    delay(300);
-  }
-  Serial.printf("Conectado!\r\n[WiFi]: Endereço de IP e %s\r\n", WiFi.localIP().toString().c_str());
+//callback que indica que o ESP entrou no modo AP
+void configModeCallback (WiFiManager *myWiFiManager) {  
+//  Serial.println("Entered config mode");
+  Serial.println("Entrou no modo de configuração");
+  Serial.println(WiFi.softAPIP()); //imprime o IP do AP
+  Serial.println(myWiFiManager->getConfigPortalSSID()); //imprime o SSID criado da rede
+
+}
+
+//callback que indica que salvamos uma nova rede para se conectar (modo estação)
+void saveConfigCallback () {
+  Serial.println("Configuração salva");
 }
