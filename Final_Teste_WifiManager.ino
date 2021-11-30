@@ -9,13 +9,25 @@
 
 //          Configuração da ALexa
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <DNSServer.h> //Local DNS Server used for redirecting all requests to the configuration portal ( https://github.com/zhouhan0126/DNSServer---esp32 )
-#include <WiFiManager.h>  
+#if defined(ESP8266)
+#include <ESP8266WiFi.h>  //ESP8266 Core WiFi Library         
+#else
+#include <WiFi.h>      //ESP32 Core WiFi Library    
+#endif
+
+#if defined(ESP8266)
+#include <ESP8266WebServer.h> //Local WebServer used to serve the configuration portal
+#else
+#include <WebServer.h> //Local WebServer used to serve the configuration portal ( https://github.com/zhouhan0126/WebServer-esp32 )
+#endif
+
+#include "DNSServer.h" //Local DNS Server used for redirecting all requests to the configuration portal ( https://github.com/zhouhan0126/DNSServer---esp32 )
+#include <WiFiManager.h>   // WiFi Configuration Magic ( https://github.com/zhouhan0126/WIFIMANAGER-ESP32 ) >> https://github.com/tzapu/WiFiManager (ORIGINAL)
+
+
 #include "fauxmoESP.h"
 
-const int PIN_AP = 33; //pino que ligara o botão 
+const int PIN_AP = D3; //pino que ligara o botão 
 
 void setupWiFi();
 fauxmoESP fauxmo;
@@ -55,7 +67,7 @@ void setup()
  //cria uma rede de nome ESP_AP com senha 12345678
   wifiManager.autoConnect("ESP_AP", "12345678"); 
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   delay(500);
   Serial.println("INICIADO!");
 
@@ -67,7 +79,7 @@ void setup()
   
 
  //       Configuração da Alexa e Adicionar dispositivo na Alexa
-  fauxmo.createServer(true); 
+  fauxmo.createServer(false); 
   fauxmo.setPort(80);
   fauxmo.enable(true);
 
@@ -153,14 +165,6 @@ void setup()
 
 void loop() {
   
-  fauxmo.handle();
-
-  static unsigned long last = millis();
-  if (millis() - last > 5000) {
-    last = millis();
-    Serial.printf("[MAIN] Free heap: %d bytes\n", ESP.getFreeHeap());
-  } 
-  
   if ( digitalRead(PIN_AP) == HIGH ) 
    {
       WiFiManager wifiManager;
@@ -171,6 +175,15 @@ void loop() {
         ESP.restart();
       }
    }
+
+  fauxmo.handle();
+
+  static unsigned long last = millis();
+  if (millis() - last > 5000) {
+    last = millis();
+    Serial.printf("[MAIN] Free heap: %d bytes\n", ESP.getFreeHeap());
+  } 
+  
 }
 
 //callback que indica que o ESP entrou no modo AP
