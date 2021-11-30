@@ -29,11 +29,7 @@
 
 const int PIN_AP = D3; //pino que ligara o botão 
 
-void setupWiFi();
 fauxmoESP fauxmo;
-
-#define WIFI_SSID      "Coloque_Aqui_o_nome_do_seu_WiFi"    
-#define WIFI_PASS      "A_Senha_do_seu_WiFi"
 
 #define Comando_1      "Iluminação"    
 #define Comando_2      "Avanço da iluminação"
